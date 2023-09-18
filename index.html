@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SignalR Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.6/signalr.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <input type="text" id="messageInput" placeholder="Digite uma mensagem">
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+
+    <div id="notificationDiv"></div>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("http://localhost:5293/hub")
+            .build();
+
+        connection.on("ReceiveNotification", (content) => {
+            const notificationDiv = document.getElementById("notificationDiv");
+            notificationDiv.innerHTML += `<p>${content}</p>`;
+        });
+
+        connection.start()
+            .then(() => {
+                console.log("Conexão com o hub estabelecida com sucesso!");
+            })
+            .catch((error) => {
+                console.error("Erro ao conectar ao hub: " + error);
+            });
+
+        function sendMessage() {
+            const messageInput = document.getElementById("messageInput");
+            const message = messageInput.value;
+
+            // Envia a mensagem para o hub
+            connection.invoke("SendNotification", message)
+                .then(() => {
+                    messageInput.value = ""; // Limpa o campo de entrada após o envio
+                })
+                .catch((error) => {
+                    console.error("Erro ao enviar mensagem: " + error);
+                });
+        }
+    </script>
+</body>
+
+</html>
